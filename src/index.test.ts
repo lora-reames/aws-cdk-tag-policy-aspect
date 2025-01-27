@@ -8,18 +8,16 @@ import { TagPolicy, TagPolicyAspect } from './index';
 describe('TagPolicyAspect', () => {
   const tagPolicy: TagPolicy = {
     CostCenter: {
-      tag_key: {
-        '@@assign': 'CostCenter',
-        '@@operators_allowed_for_child_policies': ['@@none'],
+      tagKey: {
+        assign: 'CostCenter',
       },
-      tag_value: {
-        '@@assign': ['Marketing'],
+      tagValue: {
+        assign: ['Marketing'],
       },
     },
     Project: {
-      tag_key: {
-        '@@assign': 'Project',
-        '@@operators_allowed_for_child_policies': ['@@none'],
+      tagKey: {
+        assign: 'Project',
       },
     },
   };

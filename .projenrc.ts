@@ -14,6 +14,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
   // devDeps: [],             /* Build dependencies for this module. */
   deps: ['@aws-cdk/assert'],
+  bundledDeps: ['@aws-cdk/assert'],
   // packageName: undefined,  /* The "name" in package.json. */
 
   // Make sure we export all our types

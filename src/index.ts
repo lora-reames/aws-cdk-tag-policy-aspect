@@ -1,31 +1,39 @@
 import * as cdk from 'aws-cdk-lib';
 import { IConstruct } from 'constructs';
 
+export interface ITagValue {
+  /** equivilant to '@@assign' in a JSON Tag policy*/
+  assign?: string[];
+}
 
+export interface ITagKey {
+  /** equivilant to '@@assign' in a JSON Tag policy*/
 
-// TODO
+  assign: string;
+}
+
+export interface ITagEnforcedFor {
+  /** equivilant to '@@assign' in a JSON Tag policy*/
+  assign?: string[];
+}
+
+// TODO support other operators?
 // '@@append' & '@remove'
 // '@@operators_allowed_for_child_policies';
 // https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_example-tag-policies.html
-interface TagRule {
-  tag_key: {
-    '@@assign': string;
-  };
-  tag_value?: {
-    '@@assign'?: string[];
-  };
-  enforced_for?: {
-    '@@assign'?: string[];
-  };
+export interface TagRule {
+  readonly tagKey: ITagKey;
+  readonly tagValue?: ITagValue;
+  readonly enforcedFor?: ITagEnforcedFor;
 }
 
 export type TagPolicy = Record<string, TagRule>;
-export interface TagPolicyConfig {
+export interface ITagPolicyConfig {
   /**
-   * The JSON tag policy to enforce
+   * The tag policy to enforce
    * https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_example-tag-policies.html
    */
-  tagPolicy: TagPolicy;
+  readonly tagPolicy: TagPolicy;
 }
 
 /**
@@ -33,7 +41,7 @@ export interface TagPolicyConfig {
  */
 export class TagPolicyAspect implements cdk.IAspect {
   private readonly tagPolicy: TagPolicy;
-  constructor(config: TagPolicyConfig) {
+  constructor(config: ITagPolicyConfig) {
     this.tagPolicy = config.tagPolicy;
   }
 
@@ -63,7 +71,7 @@ export class TagPolicyAspect implements cdk.IAspect {
 
     // Check required tags
     for (const [_tagPolicyKey, rule] of Object.entries(tagRules)) {
-      const requiredKey = rule.tag_key?.['@@assign'];
+      const requiredKey = rule.tagKey?.assign;
       if (!requiredKey) continue;
 
       // Check if the tag exists with the correct case
@@ -74,12 +82,12 @@ export class TagPolicyAspect implements cdk.IAspect {
           `Missing required tag: ${requiredKey} or the tag key case doesn't match the required case`,
         );
       }
-      if (hasTag && rule.tag_value) {
+      if (hasTag && rule.tagValue) {
         console.log('TAG VALUE RULE');
         const tag = tags.find(({ key }) => key === requiredKey);
-        console.log({ tag, rule: rule.tag_value });
+        console.log({ tag, rule: rule.tagValue });
         if (!tag) {return;}
-        const legalValue = rule.tag_value['@@assign']?.includes(tag.value);
+        const legalValue = rule.tagValue.assign?.includes(tag.value);
         console.log({ legalValue });
         if (!legalValue) {
           cdk.Annotations.of(node).addError(
