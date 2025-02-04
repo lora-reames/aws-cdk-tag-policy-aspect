@@ -24,6 +24,7 @@ describe('TagPolicyAspect', () => {
 
   test('passes when tags are correct', () => {
     const stack = new Stack();
+    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }));
 
     const bucket = new s3.Bucket(stack, 'TestBucket', {
       versioned: true,
@@ -32,7 +33,6 @@ describe('TagPolicyAspect', () => {
     Tags.of(bucket).add('CostCenter', 'Marketing');
     Tags.of(bucket).add('Project', 'Website');
 
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }));
 
     // Check that no error annotations exist
     const messages = SynthUtils.synthesize(stack).messages;
@@ -41,13 +41,11 @@ describe('TagPolicyAspect', () => {
 
   test('adds error annotation when required tag is missing', () => {
     const stack = new Stack();
+    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }));
 
     new s3.Bucket(stack, 'TestBucket', {
       versioned: true,
     });
-
-    // Tags.of(bucket).add('CostCenter', 'Marketing');
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }));
 
     // Synthesize and check for error annotation
     const messages = SynthUtils.synthesize(stack).messages;
@@ -80,6 +78,7 @@ describe('TagPolicyAspect', () => {
 
   test('incorrect tag_value should add error', () => {
     const stack = new Stack();
+    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }));
 
     const bucket = new s3.Bucket(stack, 'TestBucket', {
       versioned: true,
@@ -88,7 +87,6 @@ describe('TagPolicyAspect', () => {
     Tags.of(bucket).add('CostCenter', 'NOTMARKETING');
     Tags.of(bucket).add('Project', 'Website');
 
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }));
 
     // Check that no error annotations exist
     const messages = SynthUtils.synthesize(stack).messages;
@@ -96,5 +94,6 @@ describe('TagPolicyAspect', () => {
     expect(messages[0].entry.data).toMatch(/Illegal Tag Value for required tag: CostCenter/);
     expect(messages[0].level).toEqual(SynthesisMessageLevel.ERROR);
   });
+
 
 });
