@@ -1,8 +1,8 @@
 import { SynthUtils } from '@aws-cdk/assert';
-import { Stack, Aspects, Tags } from 'aws-cdk-lib';
+import { Stack, Aspects, Tags, AspectPriority } from 'aws-cdk-lib';
 import * as s3 from 'aws-cdk-lib/aws-s3';
-// import { Template, Match } from 'aws-cdk-lib/assertions';
 import { SynthesisMessageLevel } from 'aws-cdk-lib/cx-api';
+import { Construct } from 'constructs';
 import { TagPolicy, TagPolicyAspect } from './index';
 
 describe('TagPolicyAspect', () => {
@@ -24,7 +24,9 @@ describe('TagPolicyAspect', () => {
 
   test('passes when tags are correct', () => {
     const stack = new Stack();
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }));
+    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }), {
+      priority: AspectPriority.READONLY,
+    });
 
     const bucket = new s3.Bucket(stack, 'TestBucket', {
       versioned: true,
@@ -33,7 +35,6 @@ describe('TagPolicyAspect', () => {
     Tags.of(bucket).add('CostCenter', 'Marketing');
     Tags.of(bucket).add('Project', 'Website');
 
-
     // Check that no error annotations exist
     const messages = SynthUtils.synthesize(stack).messages;
     expect(messages.length).toEqual(0);
@@ -41,7 +42,9 @@ describe('TagPolicyAspect', () => {
 
   test('adds error annotation when required tag is missing', () => {
     const stack = new Stack();
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }));
+    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }), {
+      priority: AspectPriority.READONLY,
+    });
 
     new s3.Bucket(stack, 'TestBucket', {
       versioned: true,
@@ -56,7 +59,9 @@ describe('TagPolicyAspect', () => {
 
   test('adds error annotation when tag case is incorrect', () => {
     const stack = new Stack();
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }));
+    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }), {
+      priority: AspectPriority.READONLY,
+    });
 
     const bucket = new s3.Bucket(stack, 'TestBucket', {
       versioned: true,
@@ -68,17 +73,15 @@ describe('TagPolicyAspect', () => {
     // Synthesize and check for error annotation
     const messages = SynthUtils.synthesize(stack).messages;
     expect(messages.length).toEqual(2); // One error for each incorrect tag
-    expect(messages[0].entry.data).toMatch(
-      /Missing required tag: CostCenter/,
-    );
-    expect(messages[1].entry.data).toMatch(
-      /Missing required tag: Project/,
-    );
+    expect(messages[0].entry.data).toMatch(/Missing required tag: CostCenter/);
+    expect(messages[1].entry.data).toMatch(/Missing required tag: Project/);
   });
 
   test('incorrect tag_value should add error', () => {
     const stack = new Stack();
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }));
+    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }), {
+      priority: AspectPriority.READONLY,
+    });
 
     const bucket = new s3.Bucket(stack, 'TestBucket', {
       versioned: true,
@@ -87,13 +90,59 @@ describe('TagPolicyAspect', () => {
     Tags.of(bucket).add('CostCenter', 'NOTMARKETING');
     Tags.of(bucket).add('Project', 'Website');
 
-
     // Check that no error annotations exist
     const messages = SynthUtils.synthesize(stack).messages;
     expect(messages.length).toEqual(1);
-    expect(messages[0].entry.data).toMatch(/Illegal Tag Value for required tag: CostCenter/);
+    expect(messages[0].entry.data).toMatch(
+      /Illegal Tag Value for required tag: CostCenter/,
+    );
     expect(messages[0].level).toEqual(SynthesisMessageLevel.ERROR);
   });
 
+  test('tags applied to a parent construct', () => {
+    const stack = new Stack();
+    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }), {
+      priority: AspectPriority.READONLY,
+    });
 
+    class ParentConstruct extends Construct {
+      constructor(scope: Construct, id: string) {
+        super(scope, id);
+        new s3.Bucket(this, 'TestBucket', {
+          versioned: true,
+        });
+      }
+    }
+
+    const parentConstruct = new ParentConstruct(stack, 'TheParentConstruct');
+
+    Tags.of(parentConstruct).add('CostCenter', 'Marketing');
+    Tags.of(parentConstruct).add('Project', 'Website');
+
+    // Check that no error annotations exist
+    const messages = SynthUtils.synthesize(stack).messages;
+    expect(messages.length).toEqual(0);
+  });
+
+  test('tags applied at stack', () => {
+    const stack = new Stack();
+    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }), {
+      priority: AspectPriority.READONLY,
+    });
+
+    new s3.Bucket(stack, 'TestBucket', {
+      versioned: true,
+    });
+
+    Tags.of(stack).add('CostCenter', 'Marketing', {
+      priority: AspectPriority.MUTATING,
+    });
+    Tags.of(stack).add('Project', 'Website', {
+      priority: AspectPriority.MUTATING,
+    });
+
+    // Check that no error annotations exist
+    const messages = SynthUtils.synthesize(stack).messages;
+    expect(messages.length).toEqual(0);
+  });
 });
