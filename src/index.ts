@@ -46,49 +46,35 @@ export class TagPolicyAspect implements cdk.IAspect {
   }
 
   public visit(node: IConstruct): void {
-    // Only check resources that implement ITaggable
-    if (!cdk.TagManager.isTaggable(node)) {
-      return;
-    }
-
     // skip default
     if (node.node.id === 'Default') {
       return;
     }
-    this.validateTags(node);
+
+    const isTaggable = cdk.TagManager.isTaggable(node);
+    const isTaggableV2 = cdk.TagManager.isTaggableV2(node);
+    if (isTaggable || isTaggableV2) {
+      this.validateTags(node);
+    }
   }
 
   private validateTags(node: IConstruct): void {
-    const parentScope = node.node.scope;
-    if (!parentScope) return;
-    const aspects = cdk.Aspects.of(parentScope).all;
-    const tags = aspects.filter(aspect => (aspect as Object).constructor.name === 'Tag') as cdk.Tag[];
-
-    console.log({ node: node.node, tags });
-
-    // Extract tag requirements from policy
-    const tagRules = this.tagPolicy || {};
-
+    const tags = cdk.TagManager.of(node)?.tagValues();
     // Check required tags
-    for (const [_tagPolicyKey, rule] of Object.entries(tagRules)) {
+    for (const [_tagPolicyKey, rule] of Object.entries(this.tagPolicy)) {
       const requiredKey = rule.tagKey?.assign;
       if (!requiredKey) continue;
 
       // Check if the tag exists with the correct case
-      const hasTag = tags.some(tag => tag.key === requiredKey);
-      console.log(`node has required tag ${requiredKey}:`, hasTag);
+      const hasTag = tags?.[requiredKey] !== undefined;
       if (!hasTag) {
         cdk.Annotations.of(node).addError(
           `Missing required tag: ${requiredKey} or the tag key case doesn't match the required case`,
         );
       }
       if (hasTag && rule.tagValue) {
-        console.log('TAG VALUE RULE');
-        const tag = tags.find(({ key }) => key === requiredKey);
-        console.log({ tag, rule: rule.tagValue });
-        if (!tag) {return;}
-        const legalValue = rule.tagValue.assign?.includes(tag.value);
-        console.log({ legalValue });
+        const tagValue = tags?.[requiredKey];
+        const legalValue = rule.tagValue.assign?.includes(tagValue);
         if (!legalValue) {
           cdk.Annotations.of(node).addError(
             `Illegal Tag Value for required tag: ${requiredKey}`,
@@ -97,4 +83,61 @@ export class TagPolicyAspect implements cdk.IAspect {
       }
     }
   }
+
+  // private validateTagAspects(node: IConstruct): void {
+  //   const parentScope = node.node.scope;
+  //   const parentScopeAspects = parentScope ? cdk.Aspects.of(parentScope).all : [];
+  //   const nodeAspects = cdk.Aspects.of(node).all;
+
+  //   // const tagMan = cdk.TagManager.of(node)
+
+  //   // if (tagMan) {
+  //   //   console.log({tagValues: tagMan.tagValues()})
+  //   // }
+
+  //   if (nodeAspects.length > 0) {
+  //     console.log({ nodeAspects });
+  //   }
+  //   if (parentScopeAspects.length > 0) {
+  //     console.log({ parentScopeAspects });
+  //   }
+  //   const aspects = parentScopeAspects.concat(nodeAspects);
+  //   // const aspects = nodeAspects;
+  //   const tags = aspects.filter(aspect => (aspect as Object).constructor.name === 'Tag') as cdk.Tag[];
+
+
+  //   const hasTags = cdk.TagManager.of(node)?.hasTags();
+  //   if (hasTags) {
+  //     console.log({ tagValues: cdk.TagManager.of(node)?.tagValues() });
+  //   }
+
+  //   // Extract tag requirements from policy
+  //   const tagRules = this.tagPolicy || {};
+
+  //   // Check required tags
+  //   for (const [_tagPolicyKey, rule] of Object.entries(tagRules)) {
+  //     const requiredKey = rule.tagKey?.assign;
+  //     if (!requiredKey) continue;
+
+  //     // Check if the tag exists with the correct case
+  //     const hasTag = tags.some(tag => tag.key === requiredKey);
+  //     // console.log(`node has required tag ${requiredKey}:`, hasTag);
+  //     if (!hasTag) {
+  //       cdk.Annotations.of(node).addError(
+  //         `Missing required tag: ${requiredKey} or the tag key case doesn't match the required case`,
+  //       );
+  //     }
+  //     if (hasTag && rule.tagValue) {
+  //       const tag = tags.find(({ key }) => key === requiredKey);
+  //       // console.log({ tag, rule: rule.tagValue });
+  //       if (!tag) {return;}
+  //       const legalValue = rule.tagValue.assign?.includes(tag.value);
+  //       if (!legalValue) {
+  //         cdk.Annotations.of(node).addError(
+  //           `Illegal Tag Value for required tag: ${requiredKey}`,
+  //         );
+  //       }
+  //     }
+  //   }
+  // }
 }
