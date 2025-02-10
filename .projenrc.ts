@@ -5,11 +5,10 @@ const project = new awscdk.AwsCdkConstructLibrary({
   cdkVersion: '2.178.1',
   defaultReleaseBranch: 'main',
   jsiiVersion: '~5.7.0',
-  name: 'aws-cdk-tag-policy-aspect',
+  name: 'cdk-tag-enforcer',
   packageManager: javascript.NodePackageManager.NPM,
   projenrcTs: true,
-  repositoryUrl:
-    'https://github.com/shes.lora.reames/aws-cdk-tag-policy-aspect.git',
+  repositoryUrl: 'https://github.com/lora-reames/cdk-tag-enforcer',
 
   // deps: [],                /* Runtime dependencies of this module. */
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */

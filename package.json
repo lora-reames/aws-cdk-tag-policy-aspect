@@ -1,8 +1,8 @@
 {
-  "name": "aws-cdk-tag-policy-aspect",
+  "name": "cdk-tag-enforcer",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shes.lora.reames/aws-cdk-tag-policy-aspect.git"
+    "url": "https://github.com/lora-reames/cdk-tag-enforcer"
   },
   "scripts": {
     "build": "npx projen build",

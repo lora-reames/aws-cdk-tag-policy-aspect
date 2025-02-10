@@ -8,7 +8,6 @@ export interface ITagValue {
 
 export interface ITagKey {
   /** equivilant to '@@assign' in a JSON Tag policy*/
-
   assign: string;
 }
 
@@ -37,9 +36,9 @@ export interface ITagPolicyConfig {
 }
 
 /**
- * A CDK Aspect that enforces AWS tag policies on resources
+ * A CDK Aspect that enforces AWS tag policies on taggable resources
  */
-export class TagPolicyAspect implements cdk.IAspect {
+export class TagEnforcer implements cdk.IAspect {
   private readonly tagPolicy: TagPolicy;
   constructor(config: ITagPolicyConfig) {
     this.tagPolicy = config.tagPolicy;

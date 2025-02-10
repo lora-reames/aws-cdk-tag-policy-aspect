@@ -3,9 +3,9 @@ import { Stack, Aspects, Tags, AspectPriority } from 'aws-cdk-lib';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { SynthesisMessageLevel } from 'aws-cdk-lib/cx-api';
 import { Construct } from 'constructs';
-import { TagPolicy, TagPolicyAspect } from '../src/index';
+import { TagPolicy, TagEnforcer } from '../src/index';
 
-describe('TagPolicyAspect', () => {
+describe('TagEnforcer', () => {
   const tagPolicy: TagPolicy = {
     CostCenter: {
       tagKey: {
@@ -24,7 +24,7 @@ describe('TagPolicyAspect', () => {
 
   test('passes when tags are correct', () => {
     const stack = new Stack();
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }), {
+    Aspects.of(stack).add(new TagEnforcer({ tagPolicy }), {
       priority: AspectPriority.READONLY,
     });
 
@@ -42,7 +42,7 @@ describe('TagPolicyAspect', () => {
 
   test('adds error annotation when required tag is missing', () => {
     const stack = new Stack();
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }), {
+    Aspects.of(stack).add(new TagEnforcer({ tagPolicy }), {
       priority: AspectPriority.READONLY,
     });
 
@@ -59,7 +59,7 @@ describe('TagPolicyAspect', () => {
 
   test('adds error annotation when tag case is incorrect', () => {
     const stack = new Stack();
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }), {
+    Aspects.of(stack).add(new TagEnforcer({ tagPolicy }), {
       priority: AspectPriority.READONLY,
     });
 
@@ -79,7 +79,7 @@ describe('TagPolicyAspect', () => {
 
   test('incorrect tag_value should add error', () => {
     const stack = new Stack();
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }), {
+    Aspects.of(stack).add(new TagEnforcer({ tagPolicy }), {
       priority: AspectPriority.READONLY,
     });
 
@@ -101,7 +101,7 @@ describe('TagPolicyAspect', () => {
 
   test('tags applied to a parent construct', () => {
     const stack = new Stack();
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }), {
+    Aspects.of(stack).add(new TagEnforcer({ tagPolicy }), {
       priority: AspectPriority.READONLY,
     });
 
@@ -126,7 +126,7 @@ describe('TagPolicyAspect', () => {
 
   test('tags applied at stack', () => {
     const stack = new Stack();
-    Aspects.of(stack).add(new TagPolicyAspect({ tagPolicy }), {
+    Aspects.of(stack).add(new TagEnforcer({ tagPolicy }), {
       priority: AspectPriority.READONLY,
     });
 
