@@ -3,7 +3,7 @@ import { Stack, Aspects, Tags, AspectPriority } from 'aws-cdk-lib';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { SynthesisMessageLevel } from 'aws-cdk-lib/cx-api';
 import { Construct } from 'constructs';
-import { TagPolicy, TagPolicyAspect } from './index';
+import { TagPolicy, TagPolicyAspect } from '../src/index';
 
 describe('TagPolicyAspect', () => {
   const tagPolicy: TagPolicy = {
