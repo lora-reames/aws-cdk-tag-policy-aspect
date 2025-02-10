@@ -17,14 +17,6 @@ const project = new awscdk.AwsCdkConstructLibrary({
   deps: ['@aws-cdk/assert'],
   bundledDeps: ['@aws-cdk/assert'],
   // packageName: undefined,  /* The "name" in package.json. */
-
-  // Make sure we export all our types
-  publishToPypi: {
-    distName: 'cdk-tag-policy',
-    module: 'cdk_tag_policy',
-  },
-
-  // Add AWS CDK as peer dependency
   peerDeps: ['aws-cdk-lib', 'constructs'],
 });
 project.synth();
