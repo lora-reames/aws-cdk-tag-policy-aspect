@@ -61,8 +61,7 @@ export class TagEnforcer implements cdk.IAspect {
     const tags = cdk.TagManager.of(node)?.tagValues();
     // Check required tags
     for (const [_tagPolicyKey, rule] of Object.entries(this.tagPolicy)) {
-      const requiredKey = rule.tagKey?.assign;
-      if (!requiredKey) continue;
+      const requiredKey = rule.tagKey.assign;
 
       // Check if the tag exists with the correct case
       const hasTag = tags?.[requiredKey] !== undefined;
