@@ -17,5 +17,11 @@ const project = new awscdk.AwsCdkConstructLibrary({
   bundledDeps: ['@aws-cdk/assert'],
   // packageName: undefined,  /* The "name" in package.json. */
   peerDeps: ['aws-cdk-lib', 'constructs'],
+
+  tsconfig: {
+    compilerOptions: {
+      incremental: true,
+    },
+  },
 });
 project.synth();
