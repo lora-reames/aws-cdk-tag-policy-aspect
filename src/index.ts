@@ -66,7 +66,7 @@ export class TagEnforcer implements cdk.IAspect {
       // Check if the tag exists with the correct case
       const hasTag = tags?.[requiredKey] !== undefined;
       if (!hasTag) {
-        cdk.Annotations.of(node).addError(
+        cdk.Annotations.of(node).addWarning(
           `Missing required tag: ${requiredKey} or the tag key case doesn't match the required case`,
         );
       }
@@ -74,7 +74,7 @@ export class TagEnforcer implements cdk.IAspect {
         const tagValue = tags?.[requiredKey];
         const legalValue = rule.tagValue.assign?.includes(tagValue);
         if (!legalValue) {
-          cdk.Annotations.of(node).addError(
+          cdk.Annotations.of(node).addWarning(
             `Illegal Tag Value for required tag: ${requiredKey}`,
           );
         }
